@@ -21,6 +21,7 @@ const std::vector<power::mode> power::mode::MODES{
 
 void power::cycle_power_mode(){ // cycle the power mode to current + 1 according to MODES
 	auto &current = power::get_power_mode();
+
 	for (size_t i = 0; i < power::mode::MODES.size(); ++i){
 		const auto &mode = power::mode::MODES[i];
 		if (current.guid == mode.guid){
@@ -28,6 +29,8 @@ void power::cycle_power_mode(){ // cycle the power mode to current + 1 according
 			return;
 		}
 	}
+
+	//send notification perhaps?
 }
 
 const power::mode &power::get_power_mode()

@@ -9,6 +9,10 @@ namespace api {
     mediakey::~mediakey() {
         this->unhook();
         this->instance = NULL;
+        if (this->hTimer) {
+            DeleteTimerQueueTimer(NULL, this->hTimer, NULL);
+            this->hTimer = NULL;
+        }
     }
 
     void mediakey::hook() {
@@ -36,8 +40,9 @@ namespace api {
     void mediakey::ppTimer() {
         switch(this->click_stacks){
             case 1:
-                this->ignore_pp = true;
+                this->ignore_pp = true;            
                 this->sendKey(VK_MEDIA_PLAY_PAUSE);
+                this->ignore_pp = false;
                 break;
             case 2:
                 this->sendKey(VK_MEDIA_NEXT_TRACK);
@@ -52,9 +57,20 @@ namespace api {
     void mediakey::ppPressed() {
         this->click_stacks++;
 
-        if (this->timer_id)
-            KillTimer(NULL, this->timer_id);
-        this->timer_id = SetTimer(NULL, this->timer_id, this->delay_ms, this->TimerProc);
+        if (this->hTimer) {
+            DeleteTimerQueueTimer(NULL, this->hTimer, NULL);
+            this->hTimer = NULL;
+        }
+
+        CreateTimerQueueTimer(
+            &this->hTimer,
+            NULL,
+            TimerProc,
+            this,
+            this->delay_ms,
+            0,
+            WT_EXECUTEONLYONCE
+        );
     }
 
     mediakey* mediakey::instance = nullptr;
@@ -62,22 +78,20 @@ namespace api {
     LRESULT CALLBACK mediakey::KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         if (nCode == HC_ACTION && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)) {
             KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*)lParam;
-            switch (p->vkCode) {
-                case VK_MEDIA_PLAY_PAUSE:
-                    if (instance && !instance->ignore_pp){
-                        instance->ppPressed();
-                        return 1;
-                    }
-                    instance->ignore_pp = false;
-                    break;
+            if (p->vkCode == VK_MEDIA_PLAY_PAUSE && instance){
+                if (!instance->ignore_pp){
+                    instance->ppPressed();
+                    return 1;
+                }
             }
         }
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
 
-    void CALLBACK mediakey::TimerProc(HWND, UINT, UINT_PTR idEvent, DWORD) {
-        if (instance)
-            instance->ppTimer();
-        KillTimer(NULL, idEvent);
+    VOID CALLBACK mediakey::TimerProc(PVOID lpParam, BOOLEAN) {
+        auto* self = static_cast<mediakey*>(lpParam);
+        if (self)
+            self->ppTimer();
     }
+
 }

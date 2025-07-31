@@ -112,7 +112,7 @@ void mainloop()
 {
 	// AllocConsole();
     // freopen("CONOUT$", "w", stdout);
-	// api::mediakey media = api::mediakey();
+	api::mediakey media = api::mediakey();
 	MSG msg{};
 	while (::GetMessage(&msg, nullptr, 0, 0))
 	{

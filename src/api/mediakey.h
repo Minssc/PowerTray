@@ -13,11 +13,11 @@ namespace api {
         HHOOK hHook = nullptr;
         static mediakey* instance;
         int click_stacks = 0;
-        UINT_PTR timer_id = 0;
+        HANDLE hTimer = nullptr;
         bool ignore_pp = false;
 
         static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
-        static VOID CALLBACK TimerProc(HWND, UINT, UINT_PTR, DWORD);
+        static VOID CALLBACK TimerProc(PVOID lpParam, BOOLEAN TimerOrWaitFired);
 
     public:
         mediakey();
