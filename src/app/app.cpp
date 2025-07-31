@@ -24,6 +24,7 @@ enum app_menu : UINT
 
 	PSR = 5,
 	AUTO_START,
+	MEDIAKEY_CONTROL,
 
 	EXIT,
 
@@ -101,7 +102,10 @@ void run()
 	utils::strings::wstring_copy(nid.szTip, tip);
 
 	::Shell_NotifyIcon(NIM_ADD, &nid);
-
+	
+	auto media = api::mediakey();
+	if (settings::app::is_mediakey_control_enabled())
+		media.hook();
 	on_menu_create();
 	mainloop();
 
@@ -110,9 +114,6 @@ void run()
 
 void mainloop()
 {
-	// AllocConsole();
-    // freopen("CONOUT$", "w", stdout);
-	api::mediakey media = api::mediakey();
 	MSG msg{};
 	while (::GetMessage(&msg, nullptr, 0, 0))
 	{
@@ -169,6 +170,9 @@ void on_menu_create()
 	::AppendMenu(main_menu, MF_STRING, app_menu::AUTO_START, L"Windows 시작 시 자동 실행");
 
 	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
+	::AppendMenu(main_menu, MF_STRING, app_menu::MEDIAKEY_CONTROL, L"정지/재생 버튼 컨트롤");
+
+	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
 	::AppendMenu(main_menu, MF_STRING, app_menu::EXIT, L"끝내기");
 }
 
@@ -182,27 +186,31 @@ void on_menu_update()
 		::CheckMenuItem(main_menu, app_menu::MODE_BEGIN + i, current ? MF_CHECKED : MF_UNCHECKED);
 	}
 
-	::CheckMenuItem(main_menu, app_menu::PSR, settings::app::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
+	// ::CheckMenuItem(main_menu, app_menu::PSR, settings::app::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
 	::CheckMenuItem(main_menu, app_menu::AUTO_START, settings::app::is_auto_start() ? MF_CHECKED : MF_UNCHECKED);
 
-	for (size_t i = 0; i < recent_profiles.size(); i++)
-	{
-		const auto &profile = recent_profiles[i];
-		::DeleteMenu(profile_menu, app_menu::PROFILE_ITEM_BEGIN + i, MF_BYCOMMAND);
-	}
+	// for (size_t i = 0; i < recent_profiles.size(); i++)
+	// {
+	// 	const auto &profile = recent_profiles[i];
+	// 	::DeleteMenu(profile_menu, app_menu::PROFILE_ITEM_BEGIN + i, MF_BYCOMMAND);
+	// }
 
-	recent_profiles = api::power::get_power_profiles();
+	// recent_profiles = api::power::get_power_profiles();
 
-	for (size_t i = 0; i < recent_profiles.size(); i++)
-	{
-		const auto &profile = recent_profiles[i];
-		auto name = profile.name.c_str();
-		::AppendMenu(
-			profile_menu,
-			MF_STRING | (profile.enabled ? MF_CHECKED : MF_UNCHECKED),
-			app_menu::PROFILE_ITEM_BEGIN + i,
-			name);
-	}
+	// for (size_t i = 0; i < recent_profiles.size(); i++)
+	// {
+	// 	const auto &profile = recent_profiles[i];
+	// 	auto name = profile.name.c_str();
+	// 	::AppendMenu(
+	// 		profile_menu,
+	// 		MF_STRING | (profile.enabled ? MF_CHECKED : MF_UNCHECKED),
+	// 		app_menu::PROFILE_ITEM_BEGIN + i,
+	// 		name);
+	// }
+	// auto media_instance = api::mediakey::instance;
+	// if (media_instance)
+	// 	::CheckMenuItem(main_menu, app_menu::MEDIAKEY_CONTROL, media_instance->active() ? MF_CHECKED : MF_UNCHECKED);
+	::CheckMenuItem(main_menu, app_menu::MEDIAKEY_CONTROL, settings::app::is_mediakey_control_enabled() ? MF_CHECKED : MF_UNCHECKED);
 }
 
 void on_menu_show()
@@ -226,21 +234,35 @@ void on_menu_show()
 	{
 		on_app_exit();
 	}
-	else if (cmd == app_menu::PROFILE_EDIT)
+	else if (cmd == app_menu::MEDIAKEY_CONTROL)
 	{
-		open_edit_profile();
+		toggle_mediakey_control();
 	}
-	else if (cmd >= app_menu::MODE_BEGIN && cmd < app_menu::MODE_BEGIN + static_cast<UINT>(api::power::mode::MODES.size()))
-	{
-		int index = cmd - app_menu::MODE_BEGIN;
-		auto &mode = api::power::mode::MODES[index];
-		api::power::apply_power_mode(mode);
-	}
-	else if (cmd >= app_menu::PROFILE_ITEM_BEGIN)
-	{
-		const auto &profile = recent_profiles[cmd - app_menu::PROFILE_ITEM_BEGIN];
-		api::power::apply_power_profile(profile);
-	}
+	// else if (cmd == app_menu::PROFILE_EDIT)
+	// {
+	// 	open_edit_profile();
+	// }
+	// else if (cmd >= app_menu::MODE_BEGIN && cmd < app_menu::MODE_BEGIN + static_cast<UINT>(api::power::mode::MODES.size()))
+	// {
+	// 	int index = cmd - app_menu::MODE_BEGIN;
+	// 	auto &mode = api::power::mode::MODES[index];
+	// 	api::power::apply_power_mode(mode);
+	// }
+	// else if (cmd >= app_menu::PROFILE_ITEM_BEGIN)
+	// {
+	// 	const auto &profile = recent_profiles[cmd - app_menu::PROFILE_ITEM_BEGIN];
+	// 	api::power::apply_power_profile(profile);
+	// }
+}
+
+void toggle_mediakey_control(){
+	auto media_control = api::mediakey::instance;
+	auto bval = !settings::app::is_mediakey_control_enabled();
+	settings::app::set_mediakey_control(bval);
+	if (bval)
+		media_control->hook();
+	else
+		media_control->unhook();
 }
 
 void open_edit_profile()

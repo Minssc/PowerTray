@@ -16,6 +16,7 @@ void on_menu_create();
 void on_menu_update();
 void on_menu_show();
 
+void toggle_mediakey_control();
 void open_edit_profile();
 void toggle_psr(bool retain_app);
 void toggle_auto_start();

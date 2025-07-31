@@ -2,7 +2,7 @@
 
 namespace api {
     mediakey::mediakey() {
-        this->hook();
+        // this->hook();
         this->instance = this;
     }
 
@@ -71,6 +71,10 @@ namespace api {
             0,
             WT_EXECUTEONLYONCE
         );
+    }
+
+    bool mediakey::active() {
+        return this->hHook ? true : false;
     }
 
     mediakey* mediakey::instance = nullptr;

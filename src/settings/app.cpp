@@ -4,13 +4,59 @@
 #include "resources.h"
 
 #include <windows.h>
+#include <format>
 
 namespace settings::app {
 
+constexpr const auto REG_PATH_APP = L"Software\\PowerTray";
+constexpr const auto REG_KEY_MEDIACONTROL_ENABLED = L"EnableMediaKeyControl";
 constexpr const auto REG_PATH_STARTUP = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 
 constexpr const auto REG_KEY_PSR_FEATURE = L"DalPSRFeatureEnable";
 constexpr const auto REG_PATH_PSR_FEATURE = L"SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000";
+
+bool is_mediakey_control_enabled(){
+	DWORD disposition;
+	HKEY key;
+
+	LONG result = RegCreateKeyExW(HKEY_CURRENT_USER, REG_PATH_APP, 0, nullptr, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE, nullptr, &key, &disposition);
+
+	if (result == ERROR_SUCCESS){
+		if (disposition == REG_CREATED_NEW_KEY){
+			auto value = 1;
+			result = RegSetValueExW(key, REG_KEY_MEDIACONTROL_ENABLED, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(DWORD));
+			::RegCloseKey(key);
+			return true;
+		}
+		else{
+			DWORD value = 0;
+			DWORD size = sizeof(value);
+			DWORD type = 0;
+
+			result = ::RegQueryValueExW(key, REG_KEY_MEDIACONTROL_ENABLED, nullptr, &type, reinterpret_cast<LPBYTE>(&value), &size);
+
+			if (result != ERROR_SUCCESS || type != REG_DWORD)
+				return false;
+
+			return value != 0;
+		}
+	}
+	::RegCloseKey(key);
+	return false;
+}
+
+void set_mediakey_control(const bool &enabled){
+	HKEY key;
+
+	LONG result = ::RegOpenKeyExW(HKEY_CURRENT_USER, REG_PATH_APP, 0, KEY_WRITE, &key);
+	if (result != ERROR_SUCCESS)
+		return;
+
+	auto value = enabled ? 1 : 0;
+	::RegSetValueEx(key, REG_KEY_MEDIACONTROL_ENABLED, 0, REG_DWORD, reinterpret_cast<const BYTE *>(&value), sizeof(DWORD));
+
+	::RegCloseKey(key);
+}
 
 bool is_auto_start()
 {

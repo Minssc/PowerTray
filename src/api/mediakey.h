@@ -11,15 +11,16 @@ namespace api {
     private:
         const int delay_ms = 250;
         HHOOK hHook = nullptr;
-        static mediakey* instance;
         int click_stacks = 0;
         HANDLE hTimer = nullptr;
         bool ignore_pp = false;
-
+        
         static LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
         static VOID CALLBACK TimerProc(PVOID lpParam, BOOLEAN TimerOrWaitFired);
-
+        
     public:
+        static mediakey* instance;
+
         mediakey();
         ~mediakey();
 
@@ -28,6 +29,7 @@ namespace api {
         void sendKey(WORD key);
         void ppPressed();
         void ppTimer();
+        bool active();
     };
 }
 

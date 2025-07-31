@@ -3,6 +3,9 @@
 
 namespace settings::app {
 
+bool is_mediakey_control_enabled();
+void set_mediakey_control(const bool &enabled);
+
 bool is_auto_start();
 void set_auto_start(const bool &enabled);
 
