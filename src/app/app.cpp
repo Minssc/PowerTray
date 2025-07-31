@@ -74,6 +74,11 @@ void run()
 		if (app::args::has_toggle_psr_restart())
 			toggle_psr(false);
 
+		if (app::args::has_cycle_mode()){
+			api::power::cycle_power_mode();
+			has_action = true;
+		}
+
 		if (has_action)
 			return;
 	}

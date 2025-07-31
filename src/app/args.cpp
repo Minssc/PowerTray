@@ -34,6 +34,7 @@ void init()
 	app_args.add_argument("-p", "--toggle-psr").flag();
 	app_args.add_argument("-p", "--toggle-psr-restart").flag().hidden();
 	app_args.add_argument("-a", "--toggle-auto-start").flag();
+	app_args.add_argument("-c", "--cycle-mode").flag();
 
 	app_args.parse_known_args(args);
 }
@@ -72,4 +73,7 @@ bool has_toggle_auto_start()
 	return app_args.get<bool>("--toggle-auto-start");
 }
 
+bool has_cycle_mode(){
+	return app_args.get<bool>("--cycle-mode");
+}
 } // namespace app::args

@@ -17,6 +17,7 @@ bool has_open_edit_profile();
 bool has_toggle_psr();
 bool has_toggle_psr_restart();
 bool has_toggle_auto_start();
+bool has_cycle_mode();
 
 } // namespace app::args
 
