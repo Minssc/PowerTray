@@ -43,6 +43,7 @@ struct profile
 
 namespace api::power {
 
+void cycle_power_mode();
 const api::power::mode &get_power_mode();
 void apply_power_mode(const api::power::mode &mode);
 

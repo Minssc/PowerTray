@@ -19,6 +19,17 @@ const std::vector<power::mode> power::mode::MODES{
 	MODE_BETTER_BATTERY,
 };
 
+void power::cycle_power_mode(){ // cycle the power mode to current + 1 according to MODES
+	auto &current = power::get_power_mode();
+	for (size_t i = 0; i < power::mode::MODES.size(); ++i){
+		const auto &mode = power::mode::MODES[i];
+		if (current.guid == mode.guid){
+			power::apply_power_mode(power::mode::MODES[(i + 1)%power::mode::MODES.size()]);
+			return;
+		}
+	}
+}
+
 const power::mode &power::get_power_mode()
 {
 	auto func = utils::dll::get<DWORD(WINAPI *)(GUID *)>(DLL_NAME, "PowerGetEffectiveOverlayScheme");
