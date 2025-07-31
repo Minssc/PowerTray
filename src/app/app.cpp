@@ -2,6 +2,7 @@
 
 #include "resources.h"
 #include "utils.h"
+#include "api/mediakey.h"
 #include "api/power.h"
 #include "api/windows.h"
 #include "args.h"
@@ -11,6 +12,7 @@
 
 #include <format>
 #include <vector>
+#include <iostream>
 
 namespace app {
 
@@ -108,6 +110,9 @@ void run()
 
 void mainloop()
 {
+	AllocConsole();
+    freopen("CONOUT$", "w", stdout);
+	api::mediakey media = api::mediakey();
 	MSG msg{};
 	while (::GetMessage(&msg, nullptr, 0, 0))
 	{
@@ -152,13 +157,13 @@ void on_menu_create()
 		::AppendMenu(main_menu, MF_STRING, app_menu::MODE_BEGIN + i, mode.name.c_str());
 	}
 
-	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
-	::AppendMenu(main_menu, MF_POPUP, (UINT_PTR)profile_menu, L"전원 프로필");
-	::AppendMenu(profile_menu, MF_STRING, app_menu::PROFILE_EDIT, L"편집...");
-	::AppendMenu(profile_menu, MF_SEPARATOR, 0, nullptr);
+	// ::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
+	// ::AppendMenu(main_menu, MF_POPUP, (UINT_PTR)profile_menu, L"전원 프로필");
+	// ::AppendMenu(profile_menu, MF_STRING, app_menu::PROFILE_EDIT, L"편집...");
+	// ::AppendMenu(profile_menu, MF_SEPARATOR, 0, nullptr);
 
-	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
-	::AppendMenu(main_menu, MF_STRING, app_menu::PSR, L"PSR 활성화");
+	// ::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
+	// ::AppendMenu(main_menu, MF_STRING, app_menu::PSR, L"PSR 활성화");
 
 	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
 	::AppendMenu(main_menu, MF_STRING, app_menu::AUTO_START, L"Windows 시작 시 자동 실행");
