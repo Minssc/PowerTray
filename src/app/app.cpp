@@ -2,6 +2,7 @@
 
 #include "resources.h"
 #include "utils.h"
+#include "api/popup.h"
 #include "api/mediakey.h"
 #include "api/power.h"
 #include "api/windows.h"
@@ -20,7 +21,8 @@ constexpr int WM_SYSTEM_TRAY = WM_APP + 0;
 
 enum app_menu : UINT
 {
-	MODE_BEGIN = 1,
+	ENERGY_SAVER = 1,
+	MODE_BEGIN,
 
 	PSR = 5,
 	AUTO_START,
@@ -119,6 +121,8 @@ void run()
 
 void mainloop()
 {
+	// AllocConsole();
+	// freopen("CONOUT$", "w", stdout);
 	MSG msg{};
 	while (::GetMessage(&msg, nullptr, 0, 0))
 	{
@@ -146,8 +150,8 @@ void on_app_exit()
 {
 	if (main_menu)
 		::DestroyMenu(main_menu);
-	if (profile_menu)
-		::DestroyMenu(profile_menu);
+	// if (profile_menu)
+	// 	::DestroyMenu(profile_menu);
 
 	::PostQuitMessage(0);
 }
@@ -155,8 +159,10 @@ void on_app_exit()
 void on_menu_create()
 {
 	main_menu = ::CreatePopupMenu();
-	profile_menu = ::CreatePopupMenu();
-
+	// profile_menu = ::CreatePopupMenu();
+	::AppendMenu(main_menu, MF_DISABLED, app_menu::ENERGY_SAVER, L"Energy Saver");
+	// ::EnableMenuItem(main_menu, app_menu::ENERGY_SAVER, MF_GRAYED)
+	::AppendMenu(main_menu, MF_SEPARATOR, 0, nullptr);
 	for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
 	{
 		const auto &mode = api::power::mode::MODES[i];
@@ -183,12 +189,16 @@ void on_menu_create()
 
 void on_menu_update()
 {
+	auto energy_saver = settings::app::is_energy_saver_enabled();
+	::CheckMenuItem(main_menu, app_menu::ENERGY_SAVER, energy_saver ? MF_CHECKED : MF_UNCHECKED);
+
 	auto &current_mode = api::power::get_power_mode();
 	for (size_t i = 0; i < api::power::mode::MODES.size(); i++)
 	{
 		const auto &mode = api::power::mode::MODES[i];
 		const auto current = current_mode.guid == mode.guid;
 		::CheckMenuItem(main_menu, app_menu::MODE_BEGIN + i, current ? MF_CHECKED : MF_UNCHECKED);
+		::EnableMenuItem(main_menu, app_menu::MODE_BEGIN + i, energy_saver ? MF_GRAYED : MF_ENABLED);
 	}
 
 	// ::CheckMenuItem(main_menu, app_menu::PSR, settings::app::is_psr_enabled() ? MF_CHECKED : MF_UNCHECKED);
@@ -247,12 +257,12 @@ void on_menu_show()
 	// {
 	// 	open_edit_profile();
 	// }
-	// else if (cmd >= app_menu::MODE_BEGIN && cmd < app_menu::MODE_BEGIN + static_cast<UINT>(api::power::mode::MODES.size()))
-	// {
-	// 	int index = cmd - app_menu::MODE_BEGIN;
-	// 	auto &mode = api::power::mode::MODES[index];
-	// 	api::power::apply_power_mode(mode);
-	// }
+	else if (cmd >= app_menu::MODE_BEGIN && cmd < app_menu::MODE_BEGIN + static_cast<UINT>(api::power::mode::MODES.size()))
+	{
+		int index = cmd - app_menu::MODE_BEGIN;
+		auto &mode = api::power::mode::MODES[index];
+		api::power::apply_power_mode(mode);
+	}
 	// else if (cmd >= app_menu::PROFILE_ITEM_BEGIN)
 	// {
 	// 	const auto &profile = recent_profiles[cmd - app_menu::PROFILE_ITEM_BEGIN];

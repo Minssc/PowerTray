@@ -1,6 +1,9 @@
 #include "power.h"
+#include "popup.h"
 
 #include "utils.h"
+
+#include "settings/app.h"
 
 #include <powrprof.h>
 #include <windows.h>
@@ -53,8 +56,15 @@ void power::apply_power_mode(const power::mode &mode)
 {
 	auto func = utils::dll::get<DWORD(WINAPI *)(GUID *)>(DLL_NAME, "PowerSetActiveOverlayScheme");
 
+	auto energy_saver = settings::app::is_energy_saver_enabled();
+	if (settings::app::is_energy_saver_enabled()){
+		api::popup::showPopup(L"Energy Saver", 1500);
+		return;
+	}
+
 	GUID guid = mode.guid;
 	func(&guid);
+	api::popup::showPopup(mode.name.c_str(), 1500);
 }
 
 std::vector<power::profile> power::get_power_profiles()

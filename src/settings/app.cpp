@@ -10,10 +10,34 @@ namespace settings::app {
 
 constexpr const auto REG_PATH_APP = L"Software\\PowerTray";
 constexpr const auto REG_KEY_MEDIACONTROL_ENABLED = L"EnableMediaKeyControl";
+constexpr const auto REG_POWER = L"SYSTEM\\CurrentControlSet\\Control\\Power";
+constexpr const auto REG_ENERGY_SAVER = L"EnergySaverState";
+
+
 constexpr const auto REG_PATH_STARTUP = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 
 constexpr const auto REG_KEY_PSR_FEATURE = L"DalPSRFeatureEnable";
 constexpr const auto REG_PATH_PSR_FEATURE = L"SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}\\0000";
+
+
+bool is_energy_saver_enabled(){
+	HKEY key; 
+
+	LONG result = ::RegOpenKeyExW(HKEY_LOCAL_MACHINE, REG_POWER, 0, KEY_READ, &key);
+	if (result != ERROR_SUCCESS)
+		return false;
+
+	DWORD value = 0;
+	DWORD size = sizeof(value);
+	DWORD type = 0;
+
+	result = ::RegQueryValueExW(key, REG_ENERGY_SAVER, nullptr, &type, reinterpret_cast<LPBYTE>(&value), &size);
+
+	if (result != ERROR_SUCCESS || type != REG_DWORD)
+		return false;
+
+	return value != 0;
+}
 
 bool is_mediakey_control_enabled(){
 	DWORD disposition;

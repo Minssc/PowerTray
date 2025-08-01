@@ -4,6 +4,10 @@
 #include <windef.h>
 
 namespace app {
+	extern HWND handle;
+}
+
+namespace app {
 
 void run();
 void mainloop();

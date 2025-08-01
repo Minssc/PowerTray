@@ -34,7 +34,7 @@ CXXINCLUDES := -I$(SOURCE_DIR) -Iinclude \
                -I$(LIB_DIR)/argparse/include
 
 LDFLAGS     := -static -static-libgcc -static-libstdc++ -mwindows \
-               -lmsvcrt -lcomdlg32 -lgdi32 -luser32 -lshell32 -lpowrprof
+               -lmsvcrt -lcomdlg32 -lgdi32 -luser32 -lshell32 -lpowrprof -lcomctl32
 
 ifeq ($(DEBUG), 1)
 CXXFLAGS     += -g -O0

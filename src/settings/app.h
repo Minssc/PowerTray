@@ -3,6 +3,8 @@
 
 namespace settings::app {
 
+bool is_energy_saver_enabled();
+
 bool is_mediakey_control_enabled();
 void set_mediakey_control(const bool &enabled);
 
