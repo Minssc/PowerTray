@@ -36,7 +36,7 @@ bool is_energy_saver_enabled(){
 	if (result != ERROR_SUCCESS || type != REG_DWORD)
 		return false;
 
-	return value != 0;
+	return value == 1; // 1 is definitely on. Can be 2 which I've no idea what that means. 
 }
 
 bool is_mediakey_control_enabled(){
